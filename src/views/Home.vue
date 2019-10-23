@@ -64,18 +64,6 @@ export default {
     index: undefined,
     id: undefined
   }),
-  methods: {
-    play(id, route){
-        this.loading = true
-        setTimeout(() => {
-          this.loading = false
-          this.$router.push(`play/${id}/level/${route}`)
-        }, 3000)  
-    },
-    go(path){
-      this.$router.push(`${path}`)
-    }
-  },
   mounted(){
     let header={"Token" : this.$store.state.token};
     let configuracion= {headers : header};
@@ -87,6 +75,16 @@ export default {
     this.getLevels(configuracion)
   },
   methods: {
+    play(id, route){
+        this.loading = true
+        setTimeout(() => {
+          this.loading = false
+          this.$router.push(`play/${id}/level/${route}`)
+        }, 3000)  
+    },
+    go(path){
+      this.$router.push(`${path}`)
+    },
     getLevels(configuracion){
       axios.get('/progreso/list',  { params: {
         valor: this.$store.state.user._id
