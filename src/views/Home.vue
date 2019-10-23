@@ -60,7 +60,9 @@ export default {
   data: () => ({
     loading: false,
     selection: 1,
-    img: require("@/assets/img/banner.png")
+    img: require("@/assets/img/banner.png"),
+    index: undefined,
+    id: undefined
   }),
   methods: {
     play(id, route){
@@ -77,13 +79,34 @@ export default {
   mounted(){
     let header={"Token" : this.$store.state.token};
     let configuracion= {headers : header};
-    axios.get('/progreso/list',  { params: {
+
+    this.getLevels(configuracion)
+    this.findIndex(this.levels)
+    this.id = this.levels[parseInt(this.index)-1]._id
+    this.updateProgress(configuracion)
+    this.getLevels(configuracion)
+  },
+  methods: {
+    getLevels(configuracion){
+      axios.get('/progreso/list',  { params: {
         valor: this.$store.state.user._id
-      } }, configuracion)
-    .then(result => {
-      this.$store.commit("SET_LEVELS", result.data)
-    })
-    .catch(e => console.log(e))
+      } }, configuracion).then(levels => {
+        this.$store.commit("SET_LEVELS", levels.data)
+      })
+    },
+    updateProgress(configuracion){
+      axios.post('/progreso/status', { _id: this.id } ,configuracion)
+      .then(response => {
+        console.log(response)
+      })
+    },
+    findIndex(array){
+      this.index = array.findIndex(function(level) {
+        if(level.status === true && level.completed === true){
+          return level
+        }
+      });
+    }
   },
   computed: {
     levels(){
