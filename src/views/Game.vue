@@ -1116,7 +1116,7 @@ export default {
           if(result.data){
             // console.log(result.data)
             if(result.data[0].duration){
-              if(parseInt(result.data[0].duration) < parseInt(datos.duration) ){
+              if(parseInt(result.data[0].duration) < parseInt($this.datos.duration) ){
               console.log("is better")
               axios.post('/progreso/update', { _id: _id, ...$this.datos } ,configuracion)
               .then(result => {
@@ -1134,9 +1134,9 @@ export default {
               $this.actions = [];
               $this.$router.push({ path: `/`})
             }else{
-              axios.post('/progreso/update', { _id: _id, ...datos } ,configuracion)
+              axios.post('/progreso/update', { _id: _id, ...$this.datos } ,configuracion)
               .then(result => {
-                axios.post('/cognitiveModel/add', { name: data.level, actions: $this.actions } ,configuracion)
+                axios.post('/cognitiveModel/add', { name: $this.$route.params.game, actions: $this.actions } ,configuracion)
                   .then(result => {
                     $this.winner = false;
                     $this.start = null;

@@ -79,7 +79,7 @@ export default {
         results: [],
         expanded: [],
         mainHeaders: [
-            { text: 'Nivel', value: 'level' },
+            { text: 'Nivel', value: 'Juego.nombre' },
             { text: 'Pasos', value: 'steps' },
             { text: 'Inicio', value: 'start' },
             { text: 'Final', value: 'end' },
