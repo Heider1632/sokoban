@@ -922,6 +922,7 @@ export default {
       actions: [],
       direction: {x:0,y:0},
       start: null,
+      data: {},
       imgPlayer: require("@/assets/img/player-retro.png"),
       imgGoal: require("@/assets/img/goals.png"),
       imgObstacule: require("@/assets/img/obstacule.jpg")
@@ -1101,7 +1102,7 @@ export default {
         let completed = true;
         let _id = $this.$route.params.id
 
-        let datos = { 
+        $this.datos = { 
           completed:completed, 
           status : status, 
           start: $this.start,
@@ -1117,9 +1118,9 @@ export default {
             if(result.data[0].duration){
               if(parseInt(result.data[0].duration) < parseInt(datos.duration) ){
               console.log("is better")
-              axios.post('/progreso/update', { _id: _id, ...datos } ,configuracion)
+              axios.post('/progreso/update', { _id: _id, ...$this.datos } ,configuracion)
               .then(result => {
-                  axios.post('/cognitiveModel/add', { name: data.level, actions: $this.actions } ,configuracion)
+                  axios.post('/cognitiveModel/add', { name: data[0].level, actions: $this.actions } ,configuracion)
                   .then(result => false)
                   .catch(e => console.log(e))
               })
