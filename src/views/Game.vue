@@ -1246,7 +1246,7 @@ export default {
         return this.$t(dir)
       },
       reload(){
-        this.$route.go('/')
+        this.$router.go('/')
       }
     },
     computed: {
