@@ -8,9 +8,20 @@
             max-width="500"
             tile
           >
-          <v-card-title>Nivel {{ this.$route.params.game }}</v-card-title>
+          <v-card-title>
+            <v-icon
+              large
+              left
+              @click="dialog = true"
+            >
+              help
+            </v-icon>
+            Nivel {{ this.$route.params.game }}
+          </v-card-title>
           <v-card-text>
-            <div>Acciones</div>
+            <div class="justify-space-around">
+              <div>Acciones</div>
+            </div>
             <v-card-actions>
               <v-btn 
                 text
@@ -54,6 +65,15 @@
                 @click="play()"
               >
                 <v-icon>play_circle_filled</v-icon>
+              </v-btn>
+
+              <v-btn 
+                text
+                class="mx-auto"
+                color="red"
+                @click="reload"
+              >
+                <v-icon>refresh</v-icon>
               </v-btn>
 
             </v-card-actions>
@@ -833,15 +853,62 @@
         <h1 class="text--center">Error</h1>
       </v-flex> 
     </template>
+     <v-row justify="center">
+      <v-dialog v-model="dialog" persistent>
+        <v-card>
+          <v-card-title class="headline">Bienvenido a <h3 class="ml-3 mr-5 primary--text">Sokoban</h3></v-card-title>
+          <v-card-text>
+            <p class="subheadline">Instrucciones para jugar:</p>
+            <v-card flat>
+            <v-card-content justify-space-around>
+              <div>
+                <v-card-title>Elementos</v-card-title>
+                <v-card-text>
+                  <img :src="imgGoal" width="60" height="60" />
+                  <img :src="imgObstacule" width="60" height="60" />
+                  <img :src="imgPlayer" width="60" height="60" />
+                  <div style="background-color: rgb(255, 235, 0); width: 60; height: 60;"></div>
+                </v-card-text>
+              </div>
+              <div>
+              <v-card-title>Acciones</v-card-title>
+              <v-card-text>
+                <span>
+                  <v-icon>arrow_back</v-icon>
+                </span>
+                <span>
+                  <v-icon>arrow_downward</v-icon>
+                </span>
+                <span>
+                  <v-icon>arrow_upward</v-icon>
+                </span>
+                <span>
+                  <v-icon>arrow_forward</v-icon>
+                </span>
 
+                <p class="title font-weigth" >Usa las flechas para moverte en el tablero y poder lograr ubicar todas las cajas en los huecos correspondientes. </p>
+              </v-card-text>
+              </div>
+            </v-card-content>
+            </v-card>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn block color="green darken-1" text @click="dialog = false">
+              <v-icon>close</v-icon>
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-row>
   </v-layout>
 </template>
 <script>
 import axios from 'axios';
-import writeJsonFile from 'write-json-file';
 export default {
     name: 'Game',
     data: () => ({
+      dialog: false,
       occur: true,
       playing: false,
       winner: false,
@@ -852,6 +919,7 @@ export default {
         goals  : [],
         walls  : []
       },
+      actions: [],
       direction: {x:0,y:0},
       start: null,
       imgPlayer: require("@/assets/img/player-retro.png"),
@@ -934,13 +1002,15 @@ export default {
           return false;
         }
 
-        function nextMoveIsBlock(e, dir){
+        function nextMoveIsBlock(e, dir, step){
           var px = e.x+dir.x,
               py = e.y+dir.y;
 
+          $this.actions.push(`player is (${e.x}, ${e.y}) and Box is (${px}, ${py}) - ${step.text}`)
+
           for(var i=0,l=$this.level.blocks.length;i<l;i++){
               if(px == $this.level.blocks[i].x && py == $this.level.blocks[i].y)
-              return {x:px,y:py,i:i}                   
+              return {x:px,y:py,i:i}
           }
           return false;
         }
@@ -962,6 +1032,9 @@ export default {
                         $this.level.player.x += $this.direction.x;
                         $this.level.player.y += $this.direction.y;
 
+                        //that is the rigth position to player 
+                        $this.actions.push(`player is (${$this.level.player.y}, ${$this.level.player.x}) - ${step.text}`)
+
                         $this.draw($this.level.player, "rgb(130, 212, 130)");
                         $this.draw({x:$this.level.player.x-$this.direction.x, y:$this.level.player.y-$this.direction.y}, "white");
                       }else{
@@ -974,7 +1047,7 @@ export default {
                             $this.level.player.y += $this.direction.y;
                             $this.draw({x:$this.level.player.x-$this.direction.x, y:$this.level.player.y-$this.direction.y}, "white");
 
-                            if(nextMoveIsBlock(nint, $this.direction)){
+                            if(nextMoveIsBlock(nint, $this.direction, step)){
                                 $this.checkVictory();
                             }
                           }
@@ -1020,38 +1093,66 @@ export default {
 
         
         $this.winner = true;
-        //save json file to moviments
-        let json = {
-          user: $this.$store.state.user,
-          level: $this.$route.params.game,
-          start: $this.start,
-          steps: $this.steps,
-          end: Date.now(),
-          duration: Date.now() - $this.start
-        }
+
 
         // request to save the progress level 
         let header={"Token" : this.$store.state.token};
         let configuracion= {headers : header};
         let completed = true;
         let _id = $this.$route.params.id
-        axios.post('/progreso/update', { _id: _id, completed:completed, status : status } ,configuracion)
-        .then(result => {
-          axios.post('/juego/upload', { json: json } ,configuracion)
-          .then(result => {
-            console.log("exito")
-            $this.winner = false;
-            $this.start = null;
-            $this.end = null;
-            $this.steps = [];
-            $this.$router.push({ path: `/`})
-          })
-          .catch(e => console.log(e))
-        })
-        .catch(e => console.log(e))
 
-        
-        
+        let datos = { 
+          completed:completed, 
+          status : status, 
+          start: $this.start,
+          steps: $this.steps,
+          end: Date.now(),
+          duration: Date.now() - $this.start
+        }
+
+        axios.get('/progreso/one', { params: { _id : _id } })
+        .then(result => {
+          if(result.data){
+            // console.log(result.data)
+            if(result.data[0].duration){
+              if(parseInt(result.data[0].duration) < parseInt(datos.duration) ){
+              console.log("is better")
+              axios.post('/progreso/update', { _id: _id, ...datos } ,configuracion)
+              .then(result => {
+                  axios.post('/cognitiveModel/add', { name: data.level, actions: $this.actions } ,configuracion)
+                  .then(result => false)
+                  .catch(e => console.log(e))
+              })
+              .catch(e => console.log(e))
+              }
+              
+              $this.winner = false;
+              $this.start = null;
+              $this.end = null;
+              $this.steps = [];
+              $this.actions = [];
+              $this.$router.push({ path: `/`})
+            }else{
+              axios.post('/progreso/update', { _id: _id, ...datos } ,configuracion)
+              .then(result => {
+                axios.post('/cognitiveModel/add', { name: data.level, actions: $this.actions } ,configuracion)
+                  .then(result => {
+                    $this.winner = false;
+                    $this.start = null;
+                    $this.end = null;
+                    $this.steps = [];
+                    $this.actions = [];
+                    $this.$router.push({ path: `/`})
+                  })
+                  .catch(e => console.log(e))
+              })
+              .catch(e => console.log(e))  
+            }
+            
+          }
+        })
+        .catch(e => console.log(e)) 
+       
 
         }
       },
@@ -1142,11 +1243,17 @@ export default {
       },
       dir(dir){
         return this.$t(dir)
+      },
+      reload(){
+        window.location.reload()
       }
     },
     computed: {
       idioma(){
         return this.$store.state.idioma
+      },
+      levels(){
+        return this.$store.state.progress
       }
     },
     watch: {

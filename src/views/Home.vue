@@ -11,13 +11,13 @@
               v-for="(progress, key) in levels"
               :key="key"
             >
-              <v-card flat tile :disabled="!progress.status">
+              <v-card flat tile >
                 <v-img
                   height="250"
                   :src="img"
                 ></v-img>
 
-                <v-card-title>Nivel {{ progress.Juego.nombre }}</v-card-title>
+                <v-card-title>Nivel {{ progress.Juego !== undefined ? progress.Juego.nombre : "undefined"  }}</v-card-title>
 
                 <v-card-text>
                   <div class="my-4 subtitle-1 red--text" v-if="!progress.completed">
@@ -62,16 +62,11 @@ export default {
     selection: 1,
     img: require("@/assets/img/banner.png"),
     index: undefined,
-    id: undefined
   }),
   mounted(){
     let header={"Token" : this.$store.state.token};
     let configuracion= {headers : header};
 
-    this.getLevels(configuracion)
-    this.findIndex(this.levels)
-    this.id = this.levels[parseInt(this.index)-1]._id
-    this.updateProgress(configuracion)
     this.getLevels(configuracion)
   },
   methods: {
@@ -91,19 +86,6 @@ export default {
       } }, configuracion).then(levels => {
         this.$store.commit("SET_LEVELS", levels.data)
       })
-    },
-    updateProgress(configuracion){
-      axios.post('/progreso/status', { _id: this.id } ,configuracion)
-      .then(response => {
-        console.log(response)
-      })
-    },
-    findIndex(array){
-      this.index = array.findIndex(function(level) {
-        if(level.status === true && level.completed === true){
-          return level
-        }
-      });
     }
   },
   computed: {

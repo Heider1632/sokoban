@@ -10,5 +10,6 @@ export default {
     izquierda: 'izquierda',
     derecha: 'derecha',
     arriba: 'arriba',
-    abajo: 'abajo'
+    abajo: 'abajo',
+    resetear: 'resetar'
 }

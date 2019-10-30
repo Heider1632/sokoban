@@ -104,8 +104,9 @@ export default {
     },
     methods: {
         getJSON(){
-            axios.get('/juego/json', { params: { _id: this.$route.params.id } } )
+            axios.get('/progreso/query', { params: { _id: this.$route.params.id } } )
             .then(result => {
+                console.log(result.data)
                 this.results = result.data
             })
             .catch(e => console.log(e))
