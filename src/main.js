@@ -9,7 +9,7 @@ import es from './translate/es';
 import en from './translate/en';
 
 Vue.config.productionTip = false
-axios.defaults.baseURL='https://bc-sokoban.herokuapp.com/api/'
+axios.defaults.baseURL='https://b-sokoban.herokuapp.com/api/'
 //axios.defaults.baseURL='http://localhost:3000/api';
 Vue.use(VueI18n)
 
